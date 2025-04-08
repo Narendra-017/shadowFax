@@ -10,7 +10,7 @@ const CreateBookingForm = () => {
   }
 
   const [formData, setFormData] = useState(initialFormState)
-  const [barcodeData, setBarcodeData] = useState(null)
+  // const [barcodeData, setBarcodeData] = useState(null)
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -20,13 +20,26 @@ const CreateBookingForm = () => {
     e.preventDefault()
     try {
       const response = await axios.post(
-        'http://localhost:8005/api/barcodes/generate',
-        formData
+        'http://localhost:8081/v1/Booking/booking-create',
+        {
+          ...formData,
+          noOfGoods: Number(formData.noOfGoods),
+          amount: Number(formData.amount),
+
+        }
+        // setBarcodeData(response.data)
+        // setFormData(initialFormState)
       )
-      setBarcodeData(response.data)
-      setFormData(initialFormState)
+
+      if(response.status === 200 || response.status === 201){
+        alert('Booking successfully created!');
+        setFormData(initialFormState);
+      }else{
+        alert('Booking falied, please try again!');
+      }
     } catch (error) {
-      console.error('Error creating booking', error)
+      console.error('Booking error ;', error)
+      alert('Error occurred while creating the booking.')
     }
   }
 
@@ -35,7 +48,7 @@ const CreateBookingForm = () => {
       <form onSubmit={handleSubmit} className="flex flex-col">
         <h1 className="text-3xl my-5 font-bold">Create a Booking</h1>
 
-        {['name', 'contactNumber', 'noOfGoods', 'amount'].map((field) => (
+        {['name', 'phone', 'noOfGoods', 'amount'].map((field) => (
           <div key={field} className="flex flex-col my-4">
             <label htmlFor={field} className="text-lg font-semibold">
               {field.replace(/([A-Z])/g, ' $1').trim()}
@@ -58,7 +71,7 @@ const CreateBookingForm = () => {
         />
       </form>
 
-      {barcodeData && (
+      {/* {barcodeData && (
         <div className="mt-6">
           <h2 className="text-xl font-bold">Generated LR Number</h2>
           <p className="text-lg">{barcodeData.code}</p>
@@ -68,7 +81,7 @@ const CreateBookingForm = () => {
             className="mt-4 w-48 h-auto"
           />
         </div>
-      )}
+      )} */}
     </div>
   )
 }
