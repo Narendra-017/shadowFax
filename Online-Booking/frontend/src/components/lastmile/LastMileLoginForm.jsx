@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
+import axios from 'axios'
 const LastMileLoginForm = () => {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -32,7 +33,7 @@ const LastMileLoginForm = () => {
         setError('Invalid login credentials.')
       }
     } catch (error) {
-      setError('Login failed. Please try again.')
+      setError(error.response?.data?.message ||'Login failed. Please try again.')
       
     }
   }

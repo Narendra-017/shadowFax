@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
-    "axios": "^1.8.3",
+    "axios": "^1.8.4",
+    "frontend": "file:",
     "lucide-react": "^0.479.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
