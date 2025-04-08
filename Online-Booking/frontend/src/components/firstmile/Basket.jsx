@@ -1,11 +1,89 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
 
 const Basket = () => {
   const [vehicleNumber, setVehicleNumber] = useState('')
   const [error, setError] = useState('')
   const [showOverlay, setShowOverlay] = useState(false)
+
+  const [totalBasket, setTotalBasket] = useState(0);
+    const [message, setMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const submitVehicleNumber = async (
+    vehicleNumber,
+    setMessage,
+    setError,
+    setShowOverlay,
+    setIsLoading
+  )=>{
+    try{
+      setIsLoading(true)
+      setError('')
+      console.log("Calling API with vehicle:", vehicleNumber);
+      const response = await axios.post(`http://localhost:8081/v1/shipping/save?vehicleNumber=${vehicleNumber}`)
+      console.log('API response:', response.data)
+
+      setMessage('✅ Vehicle number verified!')
+      setShowOverlay(true)
+    }catch(err){
+      setError('Failed to save vehicle. Please try again.')
+      console.log('API error :', err);
+      console.error('API error:', err.response || err.message || err)
+    }finally{
+      setIsLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    const vehicleRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/
+
+    if (!vehicleRegex.test(vehicleNumber)) {
+      setError('Invalid vehicle number format. Use TS09CX1234.')
+      setMessage('')
+      return
+    }
+
+    await submitVehicleNumber(
+      vehicleNumber,
+      setMessage,
+      setError,
+      setShowOverlay,
+      setIsLoading
+    )
+
+    setShowOverlay(true)
+    setTimeout(() => {
+      setShowOverlay(false)
+    }, 3000)
+
+  }
+
+  //totalBasket Count
+  const handleBasketCount = async () => {
+    try{
+      const response = await axios.get('http://localhost:8081/v1/Booking/all')
+      const allBasket = response.data
+
+      setTotalBasket(allBasket.length)
+    }catch(err){
+      console.log('Falied to fetch TotalBasket: ',err)
+      
+      setTotalBasket(0)
+    }finally{
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    handleBasketCount();
+  }, []);
+  
+
 
   const handleChange = (e) => {
     let input = e.target.value.toUpperCase()
@@ -15,20 +93,6 @@ const Basket = () => {
     }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    const regex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/
-    if (!regex.test(vehicleNumber)) {
-      setError('Invalid format! Use TS09OG1234')
-      return
-    }
-
-    setShowOverlay(true)
-    setTimeout(() => {
-      setShowOverlay(false)
-    }, 3000)
-  }
 
   return (
     <div className="flex min-h-screen">
@@ -50,7 +114,7 @@ const Basket = () => {
             to="/basket"
             className="text-center text-3xl font-semibold bg-gray-950 rounded-lg text-gray-100 px-2 py-1"
           >
-            10
+            {totalBasket}
           </Link>
         </div>
 
@@ -71,6 +135,7 @@ const Basket = () => {
             {error && <p className="text-red-500 font-medium">{error}</p>}
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full p-3 rounded-lg bg-gray-950 text-white text-xl font-semibold cursor-pointer hover:bg-gray-800 transition"
             >
               Start Trip
@@ -93,5 +158,6 @@ const Basket = () => {
     </div>
   )
 }
+
 
 export default Basket

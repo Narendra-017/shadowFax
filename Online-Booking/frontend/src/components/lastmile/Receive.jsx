@@ -1,28 +1,60 @@
 import React, { useState } from 'react'
 import VehicleReachedOverlay from './VehicleReachedOverlay'
 import LastMileSidebar from './LastMileSidebar'
+import axios from 'axios'
 
 const Receive = () => {
   const [vehicleNumber, setVehicleNumber] = useState('')
   const [message, setMessage] = useState('')
   const [showOverlay, setShowOverlay] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading , setIsLoading] = useState(false)
+  console.log("Receive component mounted");
 
-  const handleSubmit = (e) => {
+  const verifyVehicle = async () => {
+    try{
+      setIsLoading(true)
+      setError('')
+      console.log("Calling API with vehicle:", vehicleNumber);
+
+      const trimmed = vehicleNumber.trim().toUpperCase();
+
+      console.log("verify VehicleNumber :", trimmed);
+
+      const response = await axios.post(`http://localhost:8081/v1/shipping/verfiy?vehicleNumber=${trimmed}`)
+      console.log('API response:', response.data)
+
+      if (response.data === true) {
+        setMessage('✅ Vehicle number verified!');
+        setShowOverlay(true);
+      } else {
+        setError('❌ Vehicle not found!');
+      }
+
+    }catch(err){
+      console.error('Verification error:', err);
+      setError('Something went wrong. Please try again.');
+    }finally{
+      setIsLoading(false)
+
+    }
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     const vehicleRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/
 
-    if (!vehicleRegex.test(vehicleNumber)) {
+    const trimmed = vehicleNumber.trim().toUpperCase();
+
+    if (!vehicleRegex.test(trimmed)) {
       setError('Invalid vehicle number format. Use TS09CX1234.')
       setMessage('')
       return
     }
 
-    setError('')
-    setMessage('✅ Vehicle number verified!')
-    setShowOverlay(true)
-  }
+    await verifyVehicle();
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -43,9 +75,12 @@ const Receive = () => {
             />
             <button
               type="submit"
-              className="w-full bg-gray-900 text-white py-2 rounded-md cursor-pointer hover:bg-gray-800 transition"
+              disabled={isLoading}
+              className={`w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Verify Vehicle
+              {isLoading ? 'Verifying...' : 'Verify Vehicle'}
             </button>
           </form>
 
