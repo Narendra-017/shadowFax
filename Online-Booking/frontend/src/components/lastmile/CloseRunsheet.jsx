@@ -6,7 +6,7 @@ const CloseRunsheet = () => {
   const [selectedRider, setSelectedRider] = useState('')
   const [lrNumber, setLrNumber] = useState('')
   const [pendingOrders, setPendingOrders] = useState(0)
-  const [amountCollected, setAmountCollected] = useState(0)
+  const [ setAmountCollected] = useState(0)
 
   useEffect(() => {
     const fetchPendingOrders = async () => {
